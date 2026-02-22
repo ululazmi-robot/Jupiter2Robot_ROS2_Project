@@ -5,25 +5,25 @@ Jupiter2Robot is a modular ROS2-based robotic system developed for simulation, v
 
 The project includes:
 
-Robot Description (URDF/XACRO)
+-Robot Description (URDF/XACRO)
 
-Arm and Head modules
+-Arm and Head modules
 
-Gazebo simulation environment
+-Gazebo simulation environment
 
-ROS2 integration
+-ROS2 integration
 
-Performance logging
+-Performance logging
 
 🛠 System Requirements
 
-Ubuntu 22.04
+-Ubuntu 22.04
 
-ROS2 Humble
+-ROS2 Humble
 
-Gazebo
+-Gazebo Classic
 
-colcon build system
+-colcon build system
 
 📂 Project Structure
 Jupiter2Robot_ROS2_Project/
@@ -33,6 +33,7 @@ Jupiter2Robot_ROS2_Project/
 │   ├── jupiterrobot2_arm_description/
 │   ├── jupiterrobot2_head_description/
 │   └── jupiterrobot2_gazebo/
+
 ⚙️ Build Instructions
 cd ~/Jupiter2Robot_ROS2_Project
 colcon build
@@ -40,15 +41,15 @@ source install/setup.bash
 
 🧠 Features
 
-Modular robot design
+-Modular robot design
 
-Multi-package ROS2 architecture
+-Multi-package ROS2 architecture
 
-Gazebo integration
+-Gazebo integration
 
-Arm and head subsystems
+-Arm and head subsystems
 
-Scalable for SLAM and navigation integration
+-Scalable for SLAM and navigation integration
 
 👨‍💻 Author
 
