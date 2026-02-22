@@ -18,6 +18,7 @@ This project demonstrates:
 
 
 
+
 🧱 System Architecture
 
 The system consists of:
@@ -35,14 +36,6 @@ The system consists of:
 
 
 
-📂 Repository Structure
-src/
- ├── jupiterrobot2_description
- ├── jupiterrobot2_arm_description
- ├── jupiterrobot2_head_description
- └── jupiterrobot2_gazebo
-
-
 🛠 Technologies Used
 
 -ROS2 Humble
@@ -58,6 +51,8 @@ src/
 -Ubuntu 22.04
 
 
+
+
 ⚙️ Build Instructions
 
 colcon build
@@ -65,9 +60,13 @@ colcon build
 source install/setup.bash
 
 
+
+
 🎮 Run Simulation
 
 ros2 launch jupiterrobot2_gazebo gazebo.launch.py
+
+
 
 
 📊 Performance Metrics
@@ -75,6 +74,8 @@ ros2 launch jupiterrobot2_gazebo gazebo.launch.py
 Latency analysis stored in:
 
 latency_log.tsv
+
+
 
 
 
@@ -93,6 +94,8 @@ latency_log.tsv
 -Build system management
 
 
+
+
 🔮 Future Enhancements
 
 -SLAM integration
@@ -104,6 +107,8 @@ latency_log.tsv
 -Sensor fusion
 
 -Real hardware deployment
+
+
 
 
 
