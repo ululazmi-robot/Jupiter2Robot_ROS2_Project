@@ -1,57 +1,87 @@
-🌍 Jupiter2Robot ROS2 Project
-📌 Overview
+🤖 Jupiter2Robot ROS2 Platform
 
-Jupiter2Robot is a modular ROS2-based robotic system developed for simulation, visualization, and autonomous experimentation using Gazebo and RViz.
+🚀 Overview
 
-The project includes:
+Jupiter2Robot is a modular ROS2-based robotic architecture developed for simulation, kinematic modeling, and autonomous system experimentation using Gazebo and RViz.
 
--Robot Description (URDF/XACRO)
+This project demonstrates:
 
--Arm and Head modules
+-Multi-package ROS2 design
+-Modular robot description (Arm + Head)
+-Gazebo simulation integration
+-Performance logging and system latency tracking
+-Clean ROS2 workspace structure
 
--Gazebo simulation environment
 
--ROS2 integration
 
--Performance logging
+🧱 System Architecture
+The system consists of:
 
-🛠 System Requirements
+-Robot Description Layer (URDF/XACRO)
+-Simulation Layer (Gazebo)
+-Visualization Layer (RViz)
+-Modular subsystem packages
+-Performance logging module
 
--Ubuntu 22.04
+
+
+📂 Repository Structure
+src/
+ ├── jupiterrobot2_description
+ ├── jupiterrobot2_arm_description
+ ├── jupiterrobot2_head_description
+ └── jupiterrobot2_gazebo
+
+
+🛠 Technologies Used
 
 -ROS2 Humble
-
--Gazebo Classic
-
+-Gazebo
+-RViz
+-URDF / Xacro
 -colcon build system
+-Ubuntu 22.04
 
-📂 Project Structure
-Jupiter2Robot_ROS2_Project/
-│
-├── src/
-│   ├── jupiterrobot2_description/
-│   ├── jupiterrobot2_arm_description/
-│   ├── jupiterrobot2_head_description/
-│   └── jupiterrobot2_gazebo/
 
 ⚙️ Build Instructions
-cd ~/Jupiter2Robot_ROS2_Project
+
 colcon build
 source install/setup.bash
 
-🧠 Features
 
--Modular robot design
+🎮 Run Simulation
 
--Multi-package ROS2 architecture
+ros2 launch jupiterrobot2_gazebo gazebo.launch.py
 
--Gazebo integration
 
--Arm and head subsystems
+📊 Performance Metrics
 
--Scalable for SLAM and navigation integration
+Latency analysis stored in:
+latency_log.tsv
+
+
+
+🧠 Engineering Concepts Demonstrated
+
+-Modular robot modeling
+-Simulation-based validation
+-ROS2 package structuring
+-Multi-node architecture
+-Workspace isolation
+-Build system management
+
+
+🔮 Future Enhancements
+
+-SLAM integration
+-Navigation2 stack
+-Autonomous task execution
+-Sensor fusion
+-Real hardware deployment
+
+
 
 👨‍💻 Author
 
-Muhammad Ulul Azmi Bin Sarif
-Robotics & ROS2 Developer
+Ululazmi Sarif
+Robotics & Autonomous Systems Developer
