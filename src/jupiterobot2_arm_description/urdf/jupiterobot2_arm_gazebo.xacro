@@ -1,56 +1,66 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- Transmission macro -->
-  <xacro:macro name="SimpleTransmissionPosition" params="joint n">
-    <transmission name="tran${n}">
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="${joint}">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      </joint>
-      <actuator name="motor${n}">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-        <mechanicalReduction>1</mechanicalReduction>
-      </actuator>
-    </transmission>
-  </xacro:macro>
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
 
-  <!-- Transmission macro -->
-  <xacro:macro name="SimpleTransmissionEffort" params="joint n">
-    <transmission name="tran${n}">
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="${joint}">
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-      </joint>
-      <actuator name="motor${n}">
-        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-        <mechanicalReduction>1</mechanicalReduction>
-      </actuator>
-    </transmission>
-  </xacro:macro>
+    <joint name="arm1_joint">
+      <command_interface name="position" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+      <state_interface name="effort" />
+    </joint>
 
-  <!-- Transmission 1 -->
-  <xacro:SimpleTransmissionPosition n="1" joint="arm1_joint" />
+    <joint name="arm2_joint">
+      <command_interface name="position" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+      <state_interface name="effort" />
+    </joint>
 
-  <!-- Transmission 2 -->
-  <xacro:SimpleTransmissionPosition n="2" joint="arm2_joint" />
+    <joint name="arm3_joint">
+      <command_interface name="position" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+      <state_interface name="effort" />
+    </joint>
 
-  <!-- Transmission 3 -->
-  <xacro:SimpleTransmissionPosition n="3" joint="arm3_joint" />
+    <joint name="arm4_joint">
+      <command_interface name="position" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+      <state_interface name="effort" />
+    </joint>
 
-  <!-- Transmission 4 -->
-  <xacro:SimpleTransmissionPosition n="4" joint="arm4_joint" />
+    <joint name="gripper_joint">
+      <command_interface name="position" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+      <state_interface name="effort" />
+    </joint>
+  <joint name="gripper_joint">
+      <command_interface name="position" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+      <state_interface name="effort" />
+    </joint>
 
-  <!-- Transmission 5 -->
-  <xacro:SimpleTransmissionPosition n="5" joint="gripper_joint" />
+  <joint name="head_joint">
+    <command_interface name="position" />
+    <state_interface name="position" />
+    <state_interface name="velocity" />
+    <state_interface name="effort" />
+  </joint>
 
-  <!-- ros_control plugin -->
+  </ros2_control>
+
   <gazebo>
-    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-      <controlPeriod>0.001</controlPeriod>
-      <robotNamespace>/</robotNamespace>
-      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
-      <legacyModeNS>true</legacyModeNS>
+    <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+      <robot_param>robot_description</robot_param>
+      <robot_param_node>robot_state_publisher</robot_param_node>
+      <parameters>$(find jupiterobot2_gazebo)/config/controllers.yaml</parameters>
     </plugin>
   </gazebo>
 

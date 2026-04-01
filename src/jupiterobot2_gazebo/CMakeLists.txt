@@ -23,10 +23,17 @@ find_package(gazebo_ros REQUIRED)
 # Install launch, models, rviz
 ################################################################################
 install(
-  DIRECTORY launch models rviz worlds
+  DIRECTORY launch models rviz worlds config 
   DESTINATION share/${PROJECT_NAME}
 )
 
+################################################################################
+# Install custom teleop script (Executables go to LIB)
+################################################################################
+install(PROGRAMS
+  scripts/custom_teleop.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 ################################################################################
 # Export package
 ################################################################################

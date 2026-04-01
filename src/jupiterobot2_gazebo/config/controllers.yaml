@@ -1,30 +1,48 @@
-joint_state_controller:
-  type: joint_state_controller/JointStateController
-  publish_rate: 50
+controller_manager:
+  ros__parameters:
+    update_rate: 50
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    arm_group_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    gripper_group_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    head_group_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
 
 arm_group_controller:
-  type: position_controllers/JointTrajectoryController
-  joints:
-    - arm1_joint
-    - arm2_joint
-    - arm3_joint
-    - arm4_joint
-  gains:
-    arm1_joint: {p: 1000, i: 5, d: 10, i_clamp: 1}
-    arm2_joint: {p: 1000, i: 5, d: 10, i_clamp: 1}
-    arm3_joint: {p: 1000, i: 5, d: 10, i_clamp: 1}
-    arm4_joint: {p: 1000, i: 5, d: 10, i_clamp: 1}
+  ros__parameters:
+    joints:
+      - arm1_joint
+      - arm2_joint
+      - arm3_joint
+      - arm4_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
 
 gripper_group_controller:
-  type: position_controllers/JointTrajectoryController
-  joints:
-    - gripper_joint
-  gains:
-    gripper_joint: {p: 1000, i: 5, d: 10, i_clamp: 1}
+  ros__parameters:
+    joints:
+      - gripper_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
 
 head_group_controller:
-  type: position_controllers/JointTrajectoryController
-  joints:
-    - head_joint
-  gains:
-    head_joint: {p: 1000, i: 5, d: 10, i_clamp: 1}
+  ros__parameters:
+    joints:
+      - head_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
