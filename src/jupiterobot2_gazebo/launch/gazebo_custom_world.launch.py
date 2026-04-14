@@ -21,8 +21,8 @@ def generate_launch_description():
     # --------------------
     world_argument = DeclareLaunchArgument(
         'world',
-        default_value=os.path.join(get_package_share_directory('jupiterobot2_gazebo'), 'worlds', 'jupiter_empty.world.world'),
-        description='/home/ubuntu/fyp1/src/jupiterobot2_gazebo/worlds/jupiter_empty.world.world'
+        default_value=os.path.join(get_package_share_directory('jupiterobot2_gazebo'), 'worlds', 'robocup_2025.world.xml'),
+        description='/home/ubuntu/fyp1/src/jupiterobot2_gazebo/worlds/robocup_2024.world.xml'
     )
 
     # --------------------
