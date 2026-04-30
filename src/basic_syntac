@@ -1,0 +1,132 @@
+basic command txt
+
+-------------------------------------------------------------------------------------
+
+TERMINATOR TERMINAL COMMAND 
+
+Start Terminator
+terminator
+
+Split Horizontally
+Ctrl + Shift + O
+
+Split Vertically
+Ctrl + Shift + E
+
+Navigate Between Panes
+Alt + Arrow Keys
+
+Close a Terminal Pane
+Ctrl + Shift + W
+
+------------------------------------------------------------------------------------
+
+update ros2 file
+
+cd ~/fyp1
+colcon build --symlink-install 
+source install/setup.bash
+
+
+------------------------------------------------------------------------------------
+
+force-close any hidden Gazebo processes:
+
+killall -9 gazebo gzserver gzclient
+
+
+------------------------------------------------------------------------------------
+PART 8 — Future Updates (After First Push)
+
+Whenever you change code:
+
+cd ~/fyp1
+git add .
+git commit -m "Describe what you changed"
+git push
+
+------------------------------------------------------------------------------------
+
+locate humble
+nautilus /opt/ros/humble/share/nav2_bringup/params/
+
+
+------------------------------------------------------------------------------------
+ros2 run demo_nodes_cpp talker
+------------------------------------------------------------------------------------
+
+rviz
+ros2 launch jupiterobot2_description display.launch.py
+
+
+gazebo
+ros2 launch jupiterobot2_gazebo gazebo.launch.py
+
+gazebo-custom_world
+ros2 launch jupiterobot2_gazebo gazebo_custom_world.launch.py 
+
+teleop
+ros2 run jupiterobot2_gazebo custom_teleop.py
+
+slam_toolbox
+ros2 launch slam_toolbox online_async_launch.py use_sim_time:=True
+
+SLAM+rviz
+ros2 launch jupiterobot2_gazebo slam_rviz.launch.py
+
+slam+rviz+hector
+ros2 launch jupiterobot2_gazebo slam_no_odom_rviz.launch.py
+
+save maps
+ros2 run nav2_map_server map_saver_cli -f ~/fyp1/src/jupiterobot2_gazebo/maps/no_odom_maps
+
+acml
+ros2 launch jupiterobot2_gazebo nav_standalone.launch.py
+
+bringup_launch
+ros2 launch nav2_bringup bringup_launch.py use_sim_time:=True map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/robocup_map.yaml
+
+
+------------------------------------------------------------------------------------
+rviz
+ros2 run rviz2 rviz2
+
+------------------------------------------------------------------------------------
+nak check gpu 
+nvtop
+
+------------------------------------------------------------------------------------
+test latency dds
+~/fyp1$ ros2 run latency_test latency_listener
+
+
+
+------------------------------------------------------------------------------------
+exp1
+~/fyp1/src/exp1/src$ python3 exp1.py
+
+
+------------------------------------------------------------------------------------
+for acml
+
+ros2 launch jupiterobot2_gazebo gazebo_custom_world.launch.py  - buka gazebo
+ros2 launch nav2_bringup bringup_launch.py use_sim_time:=True map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/robocup_map.yaml - buka maps
+ros2 run rviz2 rviz2 - set rviz fixed frame to map
+
+
+------------------------------------------------------------------------------------
+for bringup robot
+ros2 launch jupiterobot2_bringup jupiterobot2_bringup.launch.py
+
+------------------------------------------------------------------------------------
+Fix USB permissions
+sudo chmod 666 /dev/ttyUSB0
+sudo chmod 666 /dev/ttyACM0
+
+------------------------------------------------------------------------------------
+joystick_teleop
+ros2 launch jupiterobot2_teleop joystick_teleop.launch.py
+
+------------------------------------------------------------------------------------
+keyboard_teleop
+ros2 launch jupiterobot2_teleop keyboard_teleop.launch.py
