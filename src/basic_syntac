@@ -118,7 +118,11 @@ ros2 run rviz2 rviz2 - set rviz fixed frame to map
 for bringup robot
 ros2 launch jupiterobot2_bringup jupiterobot2_bringup.launch.py
 
-------------------------------------------------------------------------------------
+--------------------------------------------------voice recognition
+ros2 run jupiterobot2_voice stt_node.py
+ros2 run jupiterobot2_voice tts_node.py
+ros2 run jupiterobot2_voice voice_node.py
+----------------------------------
 Fix USB permissions
 sudo chmod 666 /dev/ttyUSB0
 sudo chmod 666 /dev/ttyACM0
@@ -142,6 +146,8 @@ ros2 run jupiterobot2_navigation trial.py - for multiple movement trial
 
 ------------------------------------------------------------------------------------
 voice recognition
-
+ros2 run jupiterobot2_voice stt_node.py
+ros2 run jupiterobot2_voice tts_node.py
+ros2 run jupiterobot2_voice voice_node.py
 
 
