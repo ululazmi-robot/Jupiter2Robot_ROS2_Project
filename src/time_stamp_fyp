@@ -181,7 +181,7 @@ try conduct timestamp for talker and litsener latency
 
 
 --------------------------------------------
-
+ 
 --------------------------------------------
 1/4/2026
 
@@ -340,3 +340,12 @@ install anydesk - success
 we need to install dynamixel_sdk next to move servo motor
 
 done maps lab and do acml - success
+
+----------------------------------
+4/5/2026
+
+try do nav2 point A to point B
+create new package name jupiterobot2_navigation
+
+sudo apt update
+sudo apt install ros-humble-nav2-simple-commander
