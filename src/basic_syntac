@@ -137,17 +137,34 @@ ros2 launch jupiterobot2_teleop keyboard_teleop.launch.py
 
 ------------------------------------------------------------------------------------
 point to point movement(nav2 - gazebo)
+
 ros2 launch jupiterobot2_gazebo gazebo_custom_world.launch.py
 ros2 launch nav2_bringup bringup_launch.py use_sim_time:=True map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/robocup_map.yaml
 ros2 run rviz2 rviz2 - set rviz fixed frame to map and set position awai
+
 ros2 run jupiterobot2_navigation single_point.py - single point
 ros2 run jupiterobot2_navigation multiple_points.py - for multiple movement
 ros2 run jupiterobot2_navigation trial.py - for multiple movement trial
 
 ------------------------------------------------------------------------------------
 voice recognition
+
 ros2 run jupiterobot2_voice stt_node.py
 ros2 run jupiterobot2_voice tts_node.py
 ros2 run jupiterobot2_voice voice_node.py
+
+------------------------------------------------------------------------------------
+experiment 1
+
+ros2 launch jupiterobot2_gazebo gazebo_custom_world.launch.py
+ros2 launch nav2_bringup bringup_launch.py use_sim_time:=True map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/robocup_map.yaml
+ros2 run rviz2 rviz2 - set rviz fixed frame to map and set position awai
+
+ros2 run vip_single vip_manager.py
+
+
+------------------------------------------------------------------------------------
+vision
+
 
 

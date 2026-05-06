@@ -349,3 +349,13 @@ create new package name jupiterobot2_navigation
 
 sudo apt update
 sudo apt install ros-humble-nav2-simple-commander
+
+----------------------------------
+6/5/2026
+
+write experiment first ode - done
+
+install monitoring dependencies
+pip3 install psutil pynvml
+
+install mediapipe and yolo v8
