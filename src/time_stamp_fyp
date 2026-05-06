@@ -359,3 +359,5 @@ install monitoring dependencies
 pip3 install psutil pynvml
 
 install mediapipe and yolo v8
+
+done and already create node for it

@@ -166,5 +166,12 @@ ros2 run vip_single vip_manager.py
 ------------------------------------------------------------------------------------
 vision
 
+ros2 run v4l2_camera v4l2_camera_node - on camera laptop
+
+ros2 run jupiterobot2_vision yolo_node.py - run yolo_node
+ros2 run jupiterobot2_vision mediapipe_node.py - run mediapipe_node
+
+
+ros2 run rqt_image_view rqt_image_view
 
 
