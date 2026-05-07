@@ -99,7 +99,7 @@ nvtop
 test latency dds
 ~/fyp1$ ros2 run latency_test latency_listener
 
-
+ros2 launch jupiterobot2_bringup jupiterobot2_bringup.launch.py
 
 ------------------------------------------------------------------------------------
 exp1
@@ -118,7 +118,8 @@ ros2 run rviz2 rviz2 - set rviz fixed frame to map
 for bringup robot
 ros2 launch jupiterobot2_bringup jupiterobot2_bringup.launch.py
 
---------------------------------------------------voice recognition
+--------------------------------------------------
+voice recognition
 ros2 run jupiterobot2_voice stt_node.py
 ros2 run jupiterobot2_voice tts_node.py
 ros2 run jupiterobot2_voice voice_node.py
@@ -174,4 +175,11 @@ ros2 run jupiterobot2_vision mediapipe_node.py - run mediapipe_node
 
 ros2 run rqt_image_view rqt_image_view
 
+------------------------------------------------------------------------------------
+hardware
 
+sudo chmod 666 /dev/ttyUSB0
+sudo chmod 666 /dev/ttyACM0
+ros2 launch jupiterobot2_bringup jupiterobot2_bringup.launch.py
+ros2 launch nav2_bringup bringup_launch.py use_sim_time:=True map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/robotic_lab.yaml
+ros2 run rviz2 rviz2

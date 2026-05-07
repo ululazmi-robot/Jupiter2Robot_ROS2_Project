@@ -8,7 +8,8 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
 
 install(PROGRAMS
-  scripts/vip_manager.py
+  scripts/vip_manager_simulation.py
+  scripts/vip_manager_hardware.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
