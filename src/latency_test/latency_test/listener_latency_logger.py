@@ -68,7 +68,7 @@ class LatencyLogger(Node):
         self.file.flush()
 
         # Optional debug output
-        self.get_logger().debug(
+        self.get_logger().info(
             f"Msg {self.counter} | Latency: {latency:.6f}s | CPU: {cpu_usage:.2f}%"
         )
 

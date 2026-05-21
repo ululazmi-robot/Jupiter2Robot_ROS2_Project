@@ -366,3 +366,18 @@ done and already create node for it
 7/5/2026
 
 try at robot, mic not function replace with pervious one. used the old one mic
+
+
+
+-------------------------
+18/5/2026
+
+If you ever go to a different network (like home vs. university) and your IP addresses change, you only need to update the IP address inside your ~/cyclonedds.xml file. You won't have to touch the .bashrc ever again.
+
+-------------------------
+21/5/2026
+
+robot tak boleh connect to wifi - open motherboard detect yang wire ke athena terlucut, sambung balik, restart and wifi connected
+
+
+trial hardware for both experiment - done and record video
