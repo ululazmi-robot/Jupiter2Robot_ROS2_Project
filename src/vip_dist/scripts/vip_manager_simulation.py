@@ -1,213 +1,168 @@
 #!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String # Added for Subscriber
+from rclpy.parameter import Parameter
+from std_msgs.msg import String 
 from geometry_msgs.msg import PoseStamped
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
-
-# Removed sr (SpeechRecognition) since it's now distributed
 from gtts import gTTS
-import os
-import tempfile
-import psutil
-import csv
-import time
-import sys
+import os, tempfile, psutil, csv, sys
 from datetime import datetime
 
-try:
-    from pynvml import *
-    nvmlInit()
-    HAS_GPU = True
-except:
-    HAS_GPU = False
-
-class VipManager(Node):
+class SimVipManager(Node):
     def __init__(self):
-        super().__init__('vip_manager')
+        super().__init__('vip_manager_sim')
         
-        # State Management
+        # --- SIMULATION TIME CONFIG ---
+        # Forces the node to sync with Gazebo's clock
+        self.set_parameters([Parameter('use_sim_time', Parameter.Type.BOOL, True)])
+        
+        self.max_trials = 50 
+        self.trial_count = 0
+        self.state = "IDLE" 
         self.is_busy = False
-        self.target_location = None
-        self.previous_location = None  
-        self.current_location = None   
+        self.recorded_latency = 0.0 
         
-        self.stt_latency = 0.0 # Will store time info if sent in msg, or local arrival time
-        self.nav_start_time = 0.0
+        self.nav_start_time = None
+        self.wait_start_time = None
+        self.target_location = None
         
         self.nav = BasicNavigator()
         
-        # Coordinates
+        # --- GAZEBO WORLD COORDINATES ---
+        # These are standard for 'turtlebot3_house.world'. 
+        # Adjust these via RViz 'Publish Point' if using a custom world.
         self.locations = {
-            "kitchen":     self.create_pose(-0.932, 3.6, 90.0),
-            "living room": self.create_pose(-0.974, 1.0, 180.0),
-            "home":        self.create_pose(-0.176, -0.018, 0.0)
+            "kitchen":     self.create_pose(3.0, -2.99, 270.0),
+            "living room": self.create_pose(1.24, -2.99, 270.0),
+            "bedroom":     self.create_pose(2.81, -1.07, 270.0), 
+            "study":   self.create_pose(1.09, -1.22, 0.0), 
+            "home":        self.create_pose(0.879, -2.53, 90.0)
         }
 
         # TSV Logging Setup
-        self.log_dir = "/home/ubuntu/fyp1/src/experiment_log2"
-        if not os.path.exists(self.log_dir):
-            os.makedirs(self.log_dir)
-            
-        filename = f'robot_experiment_distributed_{datetime.now().strftime("%Y%m%d_%H%M%S")}.tsv'
+        self.log_dir = os.path.expanduser("/home/ubuntu/fyp1/src/experiment_log2/exp2")
+        if not os.path.exists(self.log_dir): os.makedirs(self.log_dir)
+        filename = f'sim_50_trials_{datetime.now().strftime("%Y%m%d_%H%M%S")}.tsv'
         self.tsv_filepath = os.path.join(self.log_dir, filename)
-        
         self.init_tsv()
         
-        # NEW: Subscriber to listen to your laptop
-        self.command_sub = self.create_subscription(
-            String,
-            '/voice_commands',
-            self.voice_topic_callback,
-            10)
-
-        # Navigation monitor timer (Every 0.5 seconds)
+        self.command_sub = self.create_subscription(String, '/voice_commands', self.voice_topic_callback, 10)
         self.nav_monitor_timer = self.create_timer(0.5, self.monitor_navigation) 
 
-        self.get_logger().info(f"VIP Manager (Distributed) Ready. Listening to /voice_commands")
-        self.speak("Distributed system online. Waiting for laptop commands.")
+        self.get_logger().info("SIMULATION VIP Manager Active. Synchronized with Gazebo Clock.")
+        self.speak("Simulation ready. Send a voice command to start trials.")
 
-    def speak(self, text):
+    def init_tsv(self):
+        header = ['timestamp', 'trial_no', 'location', 'cpu_%', 'ram_%', 'time_taken_sec', 'stt_latency_sec']
+        with open(self.tsv_filepath, 'w', newline='') as f:
+            writer = csv.writer(f, delimiter='\t')
+            writer.writerow(header)
+
+    def log_trial(self, trial_no, location, duration):
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        cpu = psutil.cpu_percent()
+        ram = psutil.virtual_memory().percent
+        with open(self.tsv_filepath, 'a', newline='') as f:
+            writer = csv.writer(f, delimiter='\t')
+            writer.writerow([timestamp, trial_no, location, cpu, ram, 
+                             round(duration, 3), round(self.recorded_latency, 3)])
+
+    def voice_topic_callback(self, msg):
+        if self.is_busy: return
         try:
-            self.get_logger().info(f"Robot speaking: {text}")
-            tts = gTTS(text=text, lang='en')
-            with tempfile.NamedTemporaryFile(delete=True, suffix='.mp3') as fp:
-                tts.save(fp.name)
-                os.system(f"mpg123 -q {fp.name}")
+            data = msg.data.lower()
+            location_part, latency_part = data.split(":") if ":" in data else (data, "0.0")
+            self.recorded_latency = float(latency_part)
+            
+            for place in self.locations.keys():
+                if place in location_part and place != "home":
+                    self.target_location = place
+                    self.trial_count = 1
+                    self.is_busy = True 
+                    self.state = "MOVING_TO_TARGET"
+                    self.get_logger().info(f"SIM START: {self.target_location.upper()}")
+                    break
         except Exception as e:
-            self.get_logger().error(f"TTS Error: {e}")
+            self.get_logger().error(f"Sim Callback Error: {e}")
+
+    def monitor_navigation(self):
+        if not self.is_busy: return
+        current_ros_time = self.get_clock().now()
+
+        # PHASE 1: GO TO TARGET
+        if self.state == "MOVING_TO_TARGET" and self.nav_start_time is None:
+            self.get_logger().info(f"Trial {self.trial_count}/50: Heading to {self.target_location}")
+            self.nav_start_time = current_ros_time
+            self.nav.goToPose(self.locations[self.target_location])
+            return
+
+        # PHASE 2: ARRIVAL
+        if self.state == "MOVING_TO_TARGET" and self.nav_start_time is not None:
+            if not self.nav.isTaskComplete(): return 
+            
+            # Duration calculated using ROS time (accurate even if simulation speed changes)
+            duration = (current_ros_time - self.nav_start_time).nanoseconds / 1e9
+            
+            if self.nav.getResult() == TaskResult.SUCCEEDED:
+                self.log_trial(self.trial_count, self.target_location, duration)
+                self.state = "WAITING"
+                self.wait_start_time = current_ros_time
+            else:
+                self.get_logger().warn("Nav Failed in Sim. Retrying...")
+                self.nav_start_time = None 
+
+        # PHASE 3: WAIT
+        if self.state == "WAITING":
+            wait_duration = (current_ros_time - self.wait_start_time).nanoseconds / 1e9
+            if wait_duration >= 3.0:
+                self.state = "RETURNING_HOME"
+                self.nav_start_time = None
+            return
+
+        # PHASE 4: GO HOME
+        if self.state == "RETURNING_HOME" and self.nav_start_time is None:
+            self.nav_start_time = current_ros_time
+            self.nav.goToPose(self.locations["home"])
+            return
+
+        # PHASE 5: LOOP
+        if self.state == "RETURNING_HOME" and self.nav_start_time is not None:
+            if not self.nav.isTaskComplete(): return 
+
+            if self.trial_count < self.max_trials:
+                self.trial_count += 1
+                self.state = "MOVING_TO_TARGET"
+                self.nav_start_time = None
+                self.recorded_latency = 0.0 
+            else:
+                self.speak(f"Simulation trials finished.")
+                self.is_busy = False
+                self.state = "IDLE"
 
     def create_pose(self, x, y, yaw_deg):
         import math
         pose = PoseStamped()
         pose.header.frame_id = 'map'
         pose.header.stamp = self.get_clock().now().to_msg()
-        pose.pose.position.x = x
-        pose.pose.position.y = y
+        pose.pose.position.x, pose.pose.position.y = x, y
         yaw_rad = math.radians(yaw_deg)
-        pose.pose.orientation.z = math.sin(yaw_rad / 2.0)
-        pose.pose.orientation.w = math.cos(yaw_rad / 2.0)
+        pose.pose.orientation.z, pose.pose.orientation.w = math.sin(yaw_rad / 2.0), math.cos(yaw_rad / 2.0)
         return pose
 
-    def init_tsv(self):
-        header = [
-            'timestamp', 'event', 'cpu_%', 'ram_%', 'gpu_%', 
-            'time_taken_sec', 'latency_sec', 'oneway_latency_sec', 'total_latency_sec'
-        ]
-        with open(self.tsv_filepath, 'w', newline='') as f:
-            writer = csv.writer(f, delimiter='\t')
-            writer.writerow(header)
-
-    def log_event(self, event_name, duration=0.0, lat=0.0, ow_lat=0.0, tot_lat=0.0):
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        cpu = psutil.cpu_percent()
-        ram = psutil.virtual_memory().percent
-        gpu = 0.0
-        if HAS_GPU:
-            try:
-                handle = nvmlDeviceGetHandleByIndex(0)
-                gpu = nvmlDeviceGetUtilizationRates(handle).gpu
-            except: pass
-        
-        with open(self.tsv_filepath, 'a', newline='') as f:
-            writer = csv.writer(f, delimiter='\t')
-            writer.writerow([timestamp, event_name, cpu, ram, gpu, 
-                             round(duration, 3), round(lat, 3), round(ow_lat, 3), round(tot_lat, 3)])
-
-    # NEW: The logic is now triggered by the ROS 2 Topic instead of the Microphone
-    def voice_topic_callback(self, msg):
-        if self.is_busy:
-            return
-
-        text = msg.data.lower()
-        self.get_logger().info(f"Received Topic Command: {text}")
-        
-        # In a distributed setup, latency usually measures Network + Processing
-        # For simple logging, we mark this as the start of processing
-        start_processing = time.time()
-
-        # Shutdown Keywords
-        if "i am done" in text or "kill the program" in text:
-            self.log_event("SHUTDOWN_TRIGGERED")
-            self.speak("Experiment finished. Shutting down.")
-            if HAS_GPU:
-                nvmlShutdown()
-            rclpy.shutdown()
-            sys.exit(0)
-
-        # Previous Location Logic
-        if "previous location" in text:
-            if self.previous_location:
-                self.log_event("DETECTED_PREVIOUS")
-                self.target_location = self.previous_location
-                self.is_busy = True
-                return
-            else:
-                self.speak("No memory of previous location.")
-                return
-
-        # Normal Location detection
-        for place in self.locations.keys():
-            if place in text:
-                self.log_event(f"DETECTED_{place.upper()}")
-                self.target_location = place
-                self.is_busy = True 
-                break
-
-    def monitor_navigation(self):
-        if not self.is_busy:
-            return
-
-        # Start Move Phase
-        if self.target_location and self.nav_start_time == 0.0:
-            self.speak(f"I am going to the {self.target_location}.")
-            self.nav_start_time = time.time()
-            self.nav.goToPose(self.locations[self.target_location])
-            return
-
-        # Monitoring Phase
-        if self.nav_start_time > 0.0:
-            if not self.nav.isTaskComplete():
-                return 
-            
-            end_time = time.time()
-            time_taken = end_time - self.nav_start_time
-            
-            # Simplified latency logging for distributed setup
-            oneway_lat = 0.2 # Estimated network jitter
-            total_lat = time_taken
-
-            result = self.nav.getResult()
-            if result == TaskResult.SUCCEEDED:
-                self.get_logger().info(f"Arrived at {self.target_location}!")
-                self.log_event(f"REACHED_{self.target_location.upper()}", 
-                               time_taken, 0.0, oneway_lat, total_lat)
-                self.speak(f"I have reached the {self.target_location}.")
-                
-                if self.current_location:
-                    self.previous_location = self.current_location
-                self.current_location = self.target_location
-                
-            else:
-                self.log_event("NAV_FAILED")
-                self.speak("Navigation failed.")
-
-            self.is_busy = False
-            self.target_location = None
-            self.nav_start_time = 0.0
+    def speak(self, text):
+        try:
+            tts = gTTS(text=text, lang='en')
+            with tempfile.NamedTemporaryFile(delete=True, suffix='.mp3') as fp:
+                tts.save(fp.name)
+                os.system(f"mpg123 -q {fp.name} > /dev/null 2>&1") # Silenced errors
+        except: pass
 
 def main():
     rclpy.init()
-    node = VipManager()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        if rclpy.ok():
-            if HAS_GPU:
-                nvmlShutdown()
-            rclpy.shutdown()
+    node = SimVipManager()
+    try: rclpy.spin(node)
+    except KeyboardInterrupt: pass
+    finally: rclpy.shutdown()
 
-if __name__ == '__main__':
-    main()
+if __name__ == '__main__': main()
