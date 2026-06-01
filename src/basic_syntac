@@ -139,6 +139,18 @@ ros2 launch jupiterobot2_teleop joystick_teleop.launch.py
 keyboard_teleop
 ros2 launch jupiterobot2_teleop keyboard_teleop.launch.py
 
+
+------------------------------------------------------------------------------------
+conduct mapping hardware
+
+sudo chmod 666 /dev/ttyUSB0
+sudo chmod 666 /dev/ttyACM0
+ros2 launch jupiterobot2_bringup jupiterobot2_bringup.launch.py - launch robot
+ros2 launch jupiterobot2_gazebo slam_rviz.launch.py - launch mapping 
+ros2 launch jupiterobot2_teleop keyboard_teleop.launch.py - keyboard teleop control
+ros2 run nav2_map_server map_saver_cli -f ~/fyp1/src/jupiterobot2_gazebo/maps/no_odom_maps - save maps
+
+
 ------------------------------------------------------------------------------------
 point to point movement(nav2 - gazebo)
 
@@ -200,11 +212,11 @@ experiment vip_single_simulation
 
 sudo chmod 666 /dev/ttyUSB0
 sudo chmod 666 /dev/ttyACM0
-ros2 launch jupiterobot2_bringup jupiterobot2_bringup.launch.py
-ros2 launch nav2_bringup bringup_launch.py use_sim_time:=True map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/robocup_map.yaml
-ros2 run rviz2 rviz2
-ros2 run vip_single vip_manager_hvip_manager_simulation.py
 
+ros2 launch jupiterobot2_gazebo gazebo_custom_world.launch.py
+ros2 launch nav2_bringup bringup_launch.py use_sim_time:=True map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/trialt2_1_simulation.yaml
+ros2 run rviz2 rviz2
+ros2 run vip_single vip_manager_simulation.py
 
 
 ------------------------------------------------------------------------------------
@@ -212,8 +224,10 @@ experiment vip_single
 
 sudo chmod 666 /dev/ttyUSB0
 sudo chmod 666 /dev/ttyACM0
+
 ros2 launch jupiterobot2_bringup jupiterobot2_bringup.launch.py
-ros2 launch nav2_bringup bringup_launch.py use_sim_time:=False map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/robotic_lab.yaml
+
+ros2 launch nav2_bringup bringup_launch.py use_sim_time:=False map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/exp1_t2.yaml
 ros2 run rviz2 rviz2
 ros2 run vip_single vip_manager_hardware.py
 
@@ -225,7 +239,7 @@ distrubited vip_manager_simulation
 
 
 ros2 launch jupiterobot2_gazebo gazebo_custom_world.launch.py
-ros2 launch nav2_bringup bringup_launch.py use_sim_time:=True map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/robocup_map.yaml
+ros2 launch nav2_bringup bringup_launch.py use_sim_time:=True map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/exp1_t2.yaml
 ros2 run rviz2 rviz2 - set rviz fixed frame to map and set position awai
 
 export ROS_DOMAIN_ID=42
@@ -238,7 +252,7 @@ distrubited vip_manager_hardware
 sudo chmod 666 /dev/ttyUSB0
 sudo chmod 666 /dev/ttyACM0
 ros2 launch jupiterobot2_bringup jupiterobot2_bringup.launch.py
-ros2 launch nav2_bringup bringup_launch.py use_sim_time:=False map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/robotic_lab.yaml
+ros2 launch nav2_bringup bringup_launch.py use_sim_time:=False map:=/home/ubuntu/fyp1/src/jupiterobot2_gazebo/maps/exp1_t2.yaml
 ros2 run rviz2 rviz2 - set rviz fixed frame to map and set position awai
 
 export ROS_DOMAIN_ID=42

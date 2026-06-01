@@ -4,204 +4,176 @@ from rclpy.node import Node
 from std_msgs.msg import String 
 from geometry_msgs.msg import PoseStamped
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
-
 from gtts import gTTS
-import os
-import tempfile
-import psutil
-import csv
-import time
-import sys
+import os, tempfile, psutil, csv, time, sys
 from datetime import datetime
 
-try:
-    from pynvml import *
-    nvmlInit()
-    HAS_GPU = True
-except:
-    HAS_GPU = False
-
-class VipManager(Node):
+class DistributedVipManager(Node):
     def __init__(self):
-        super().__init__('vip_manager')
+        super().__init__('vip_manager_distributed')
         
-        # State Management
+        # --- CONFIGURATION ---
+        self.max_trials = 50 
+        self.trial_count = 0
+        self.state = "IDLE" 
         self.is_busy = False
-        self.target_location = None
-        self.previous_location = None  
-        self.current_location = None   
         
-        self.stt_latency = 0.0 
+        # This will store the latency sent from your Jetson
+        self.recorded_latency = 0.0 
+        
         self.nav_start_time = 0.0
+        self.wait_start_time = 0.0
+        self.target_location = None
         
         self.nav = BasicNavigator()
         
-        # --- UPDATED COORDINATES FROM SECOND SCRIPT ---
+        # Coordinates mapped for Gazebo Simulation
         self.locations = {
-            "kitchen":     self.create_pose(-5.05, -1.06, 90.0),
-            "living room": self.create_pose(-2.09, -0.358, 180.0),
-            "home":        self.create_pose(0.0816, -0.039, 0.0)
+            "kitchen":     self.create_pose(-1.29, 1.23, 270.0),
+            "living room": self.create_pose(-0.032, -0.00764, 270.0),
+            "bedroom":     self.create_pose(-2.49, 0.0478, 270.0), 
+            "study":       self.create_pose(-1.4, -1.38, 0.0), 
+            "home":        self.create_pose(-0.2, -0.537, 0.0)
         }
 
-        # --- UPDATED LOGGING DIRECTORY ---
-        self.log_dir = "/home/ubuntu/fyp1/src/experiment_log"
-        if not os.path.exists(self.log_dir):
+        # TSV Logging Setup
+        self.log_dir = "/home/ubuntu/fyp1/src/experiment_log2"
+        if not os.path.exists(self.log_dir): 
             os.makedirs(self.log_dir)
-            
-        filename = f'robot_experiment_distributed_{datetime.now().strftime("%Y%m%d_%H%M%S")}.tsv'
+        filename = f'dist_50_trials_{datetime.now().strftime("%Y%m%d_%H%M%S")}.tsv'
         self.tsv_filepath = os.path.join(self.log_dir, filename)
-        
         self.init_tsv()
         
-        # Subscriber to listen to your laptop
-        self.command_sub = self.create_subscription(
-            String,
-            '/voice_commands',
-            self.voice_topic_callback,
-            10)
-
-        # Navigation monitor timer (Every 0.5 seconds)
+        # Subscribers and Timers
+        self.command_sub = self.create_subscription(String, '/voice_commands', self.voice_topic_callback, 10)
         self.nav_monitor_timer = self.create_timer(0.5, self.monitor_navigation) 
 
-        self.get_logger().info(f"VIP Manager (Distributed) Ready. Coordinates updated. Listening to /voice_commands")
-        self.speak("Distributed system online. Waiting for laptop commands.")
-
-    def speak(self, text):
-        try:
-            self.get_logger().info(f"Robot speaking: {text}")
-            tts = gTTS(text=text, lang='en')
-            with tempfile.NamedTemporaryFile(delete=True, suffix='.mp3') as fp:
-                tts.save(fp.name)
-                os.system(f"mpg123 -q {fp.name}")
-        except Exception as e:
-            self.get_logger().error(f"TTS Error: {e}")
-
-    def create_pose(self, x, y, yaw_deg):
-        import math
-        pose = PoseStamped()
-        pose.header.frame_id = 'map'
-        pose.header.stamp = self.get_clock().now().to_msg()
-        pose.pose.position.x = x
-        pose.pose.position.y = y
-        yaw_rad = math.radians(yaw_deg)
-        pose.pose.orientation.z = math.sin(yaw_rad / 2.0)
-        pose.pose.orientation.w = math.cos(yaw_rad / 2.0)
-        return pose
+        self.get_logger().info("VIP Distributed System Manager: 50-Trial Loop Mode Active")
+        self.speak("Distributed system ready Manager.Speak a location to start a 50 trial session")
 
     def init_tsv(self):
-        header = [
-            'timestamp', 'event', 'cpu_%', 'ram_%', 'gpu_%', 
-            'time_taken_sec', 'latency_sec', 'oneway_latency_sec', 'total_latency_sec'
-        ]
+        header = ['timestamp', 'trial_no', 'location', 'cpu_%', 'ram_%', 'time_taken_sec', 'stt_latency_sec']
         with open(self.tsv_filepath, 'w', newline='') as f:
             writer = csv.writer(f, delimiter='\t')
             writer.writerow(header)
 
-    def log_event(self, event_name, duration=0.0, lat=0.0, ow_lat=0.0, tot_lat=0.0):
+    def log_trial(self, trial_no, location, duration):
         timestamp = datetime.now().strftime("%H:%M:%S")
         cpu = psutil.cpu_percent()
         ram = psutil.virtual_memory().percent
-        gpu = 0.0
-        if HAS_GPU:
-            try:
-                handle = nvmlDeviceGetHandleByIndex(0)
-                gpu = nvmlDeviceGetUtilizationRates(handle).gpu
-            except: pass
-        
         with open(self.tsv_filepath, 'a', newline='') as f:
             writer = csv.writer(f, delimiter='\t')
-            writer.writerow([timestamp, event_name, cpu, ram, gpu, 
-                             round(duration, 3), round(lat, 3), round(ow_lat, 3), round(tot_lat, 3)])
+            # Uses the latency parsed from the initial incoming command
+            writer.writerow([timestamp, trial_no, location, cpu, ram, 
+                             round(duration, 3), round(self.recorded_latency, 3)])
 
     def voice_topic_callback(self, msg):
-        if self.is_busy:
+        if self.is_busy: 
             return
-
-        text = msg.data.lower()
-        self.get_logger().info(f"Received Topic Command: {text}")
         
-        # Shutdown Keywords
-        if "i am done" in text or "kill the program" in text:
-            self.log_event("SHUTDOWN_TRIGGERED")
-            self.speak("Experiment finished. Shutting down.")
-            if HAS_GPU:
-                nvmlShutdown()
-            rclpy.shutdown()
-            sys.exit(0)
-
-        # Previous Location Logic
-        if "previous location" in text:
-            if self.previous_location:
-                self.log_event("DETECTED_PREVIOUS")
-                self.target_location = self.previous_location
-                self.is_busy = True
-                return
+        # Expecting message format "location:latency" (e.g., "kitchen:0.855")
+        try:
+            data = msg.data.lower()
+            if ":" in data:
+                location_part, latency_part = data.split(":")
+                self.recorded_latency = float(latency_part)
             else:
-                self.speak("No memory of previous location.")
-                return
-
-        # Normal Location detection
-        for place in self.locations.keys():
-            if place in text:
-                self.log_event(f"DETECTED_{place.upper()}")
-                self.target_location = place
-                self.is_busy = True 
-                break
+                location_part = data
+                self.recorded_latency = 0.0 # Fallback if no latency payload exists
+            
+            for place in self.locations.keys():
+                if place in location_part and place != "home":
+                    self.target_location = place
+                    self.trial_count = 1
+                    self.is_busy = True 
+                    self.state = "MOVING_TO_TARGET"
+                    self.get_logger().info(f"Starting 50 automated trials for {self.target_location.upper()}. Network STT Latency: {self.recorded_latency}s")
+                    break
+        except Exception as e:
+            self.get_logger().error(f"Callback processing error: {e}")
 
     def monitor_navigation(self):
-        if not self.is_busy:
+        if not self.is_busy: 
             return
 
-        # Start Move Phase
-        if self.target_location and self.nav_start_time == 0.0:
-            self.speak(f"I am going to the {self.target_location}.")
+        # PHASE 1: GO TO TARGET
+        if self.state == "MOVING_TO_TARGET" and self.nav_start_time == 0.0:
+            self.get_logger().info(f"Trial {self.trial_count}/{self.max_trials}: Heading to {self.target_location}")
             self.nav_start_time = time.time()
             self.nav.goToPose(self.locations[self.target_location])
             return
 
-        # Monitoring Phase
-        if self.nav_start_time > 0.0:
-            if not self.nav.isTaskComplete():
+        # PHASE 2: ARRIVAL & LOGGING
+        if self.state == "MOVING_TO_TARGET" and self.nav_start_time > 0.0:
+            if not self.nav.isTaskComplete(): 
                 return 
             
-            end_time = time.time()
-            time_taken = end_time - self.nav_start_time
-            
-            # Simplified latency logging for distributed setup
-            oneway_lat = 0.2 # Estimated network jitter
-            total_lat = time_taken
-
-            result = self.nav.getResult()
-            if result == TaskResult.SUCCEEDED:
-                self.get_logger().info(f"Arrived at {self.target_location}!")
-                self.log_event(f"REACHED_{self.target_location.upper()}", 
-                               time_taken, 0.0, oneway_lat, total_lat)
-                self.speak(f"I have reached the {self.target_location}.")
-                
-                if self.current_location:
-                    self.previous_location = self.current_location
-                self.current_location = self.target_location
-                
+            duration = time.time() - self.nav_start_time
+            if self.nav.getResult() == TaskResult.SUCCEEDED:
+                # Log stats only for the active trip
+                self.log_trial(self.trial_count, self.target_location, duration)
+                self.state = "WAITING"
+                self.wait_start_time = time.time()
             else:
-                self.log_event("NAV_FAILED")
-                self.speak("Navigation failed.")
+                self.get_logger().error("Navigation Failed. Retrying this trial iteration.")
+                self.nav_start_time = 0.0 
 
-            self.is_busy = False
-            self.target_location = None
-            self.nav_start_time = 0.0
+        # PHASE 3: 3-SECOND DELAY AT TARGET
+        if self.state == "WAITING":
+            if (time.time() - self.wait_start_time) >= 3.0:
+                self.state = "RETURNING_HOME"
+                self.nav_start_time = 0.0
+            return
+
+        # PHASE 4: GO HOME (SILENT / NO LOGGING)
+        if self.state == "RETURNING_HOME" and self.nav_start_time == 0.0:
+            self.nav_start_time = time.time()
+            self.nav.goToPose(self.locations["home"])
+            return
+
+        # PHASE 5: CHECK IF FINISHED OR LOOP AGAIN
+        if self.state == "RETURNING_HOME" and self.nav_start_time > 0.0:
+            if not self.nav.isTaskComplete(): 
+                return 
+
+            if self.trial_count < self.max_trials:
+                self.trial_count += 1
+                self.state = "MOVING_TO_TARGET"
+                self.nav_start_time = 0.0
+                # STT Latency is only relevant for the 1st voice trigger; reset for automated loops
+                self.recorded_latency = 0.0 
+            else:
+                self.speak(f"Finished fifty trials for {self.target_location}")
+                self.is_busy = False
+                self.state = "IDLE"
+
+    def create_pose(self, x, y, yaw_deg):
+        import math
+        pose = PoseStamped()
+        pose.header.frame_id, pose.header.stamp = 'map', self.get_clock().now().to_msg()
+        pose.pose.position.x, pose.pose.position.y = x, y
+        yaw_rad = math.radians(yaw_deg)
+        pose.pose.orientation.z, pose.pose.orientation.w = math.sin(yaw_rad / 2.0), math.cos(yaw_rad / 2.0)
+        return pose
+
+    def speak(self, text):
+        try:
+            tts = gTTS(text=text, lang='en')
+            with tempfile.NamedTemporaryFile(delete=True, suffix='.mp3') as fp:
+                tts.save(fp.name)
+                os.system(f"mpg123 -q {fp.name}")
+        except Exception: 
+            pass
 
 def main():
     rclpy.init()
-    node = VipManager()
-    try:
+    node = DistributedVipManager()
+    try: 
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except KeyboardInterrupt: 
         pass
-    finally:
-        if rclpy.ok():
-            if HAS_GPU:
-                nvmlShutdown()
-            rclpy.shutdown()
+    finally: 
+        rclpy.shutdown()
 
-if __name__ == '__main__':
+if __name__ == '__main__': 
     main()

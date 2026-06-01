@@ -1,0 +1,5 @@
+timestamp	trial_no	location	cpu_%	ram_%	time_taken_sec	stt_latency_sec
+14:46:35	1	bedroom	11.6	28.2	150.504	1.065
+14:47:53	2	bedroom	13.1	28.1	55.054	0.0
+14:49:09	3	bedroom	13.5	28.2	45.001	0.0
+14:50:43	4	bedroom	13.0	28.2	65.534	0.0

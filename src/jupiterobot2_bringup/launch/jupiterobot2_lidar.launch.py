@@ -9,11 +9,12 @@ def generate_launch_description():
             name='rplidar_node',
             parameters=[{
                 'channel_type': 'serial',
-                'serial_port': '/dev/ttyUSB1', # Ensure this matches your port
-                'serial_baudrate': 115200,     # Match your ROS 1 config
+                'serial_port': '/dev/ttyUSB1',  # <-- Fixed port to USB0
+                'serial_baudrate': 115200,      
                 'frame_id': 'base_scan',
                 'inverted': False,
                 'angle_compensate': True,
+                'scan_mode': 'Sensitivity',     # <-- Added to prevent buffer overflow
             }],
             output='screen'
         )

@@ -381,3 +381,51 @@ robot tak boleh connect to wifi - open motherboard detect yang wire ke athena te
 
 
 trial hardware for both experiment - done and record video
+
+
+-------------------------
+26/5/2026
+
+start experiment. create physciall map at bilik sumber. try robot again
+build the experiment area with around (3.4m x 3.6 m) - reduce to this measurement because item needed for it is limited
+
+try run single_exp there is error and battery is low. so we stop at 5.30 to charge robot
+
+-------------------------
+27/5/2026
+
+start again experiment 1. cari screw 32 *8mm
+
+-------------------------
+28/5/2026
+
+start over exp1 with new maps
+living_room - done
+kitchen 25 trial - at morning because battery low
+
+
+-------------------------
+29/5/2026
+
+finish experiment 1 with single
+kitchen around 15 trial
+bedroom 5 trial
+
+done experiment with hardware of single
+
+create new maps at gazebo name trial1_t2 but used file robocup_2024
+
+-------------------------
+31/5/2026
+
+start exp2
+
+done with living room, kitchen,study room
+
+simulation single done living room,kitchen,bedroom
+there is problem with rplidar but it just usb can't connect so change usb port  'serial_port': '/dev/ttyUSB0', to  'serial_port': '/dev/ttyUSB1', at jupiterobot2_lidar.launch
+
+-------------------------
+1/6/2026
+
+final day to test exp2 which go to bed room
