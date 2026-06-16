@@ -35,11 +35,11 @@ class VipManager(Node):
         self.nav = BasicNavigator()
         
         self.locations = {
-            "kitchen":     self.create_pose(3.0, -2.99, 270.0),
-            "living room": self.create_pose(1.24, -2.99, 270.0),
-            "bedroom":     self.create_pose(2.81, -1.07, 270.0), 
+            "kitchen":     self.create_pose(-0.93, -0.936, 270.0),
+            "living room": self.create_pose(-2.82, -0.815, 270.0),
+            "bedroom":     self.create_pose(-5.03, 0.249, 270.0), 
             "study":   self.create_pose(1.09, -1.22, 0.0), 
-            "home":        self.create_pose(0.879, -2.53, 90.0)
+            "home":        self.create_pose(0.63, -0.0197, 90.0)
         }
 
 

@@ -10,6 +10,7 @@ find_package(nav2_msgs REQUIRED)
 install(PROGRAMS
   scripts/vip_manager_simulation.py
   scripts/vip_manager_hardware.py
+  scripts/vip_manager_hardware_spare.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

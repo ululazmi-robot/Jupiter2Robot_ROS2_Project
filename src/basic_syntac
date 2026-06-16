@@ -191,6 +191,18 @@ ros2 run jupiterobot2_vision mediapipe_node.py - run mediapipe_node
 ros2 run rqt_image_view rqt_image_view
 
 ------------------------------------------------------------------------------------
+vision - jupiter2-camera
+
+cd /home/ubuntu/fyp1
+source install/setup.bash
+
+# Use the standard layout file to prevent the UVC search loop crash
+ros2 launch astra_camera astra.launch.xml
+ros2 run jupiterobot2_vision yolo_node.py
+sudo chmod 666 /dev/bus/usb/001/013
+
+
+------------------------------------------------------------------------------------
 hardware
 
 sudo chmod 666 /dev/ttyUSB0
