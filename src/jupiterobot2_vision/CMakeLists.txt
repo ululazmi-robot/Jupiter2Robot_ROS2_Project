@@ -12,6 +12,7 @@ find_package(rclpy REQUIRED)
 install(PROGRAMS
   scripts/yolo_node.py
   scripts/mediapipe_node.py
+  scripts/experiment3.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

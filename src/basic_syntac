@@ -195,11 +195,12 @@ vision - jupiter2-camera
 
 cd /home/ubuntu/fyp1
 source install/setup.bash
-
+sudo chmod 666 /dev/bus/usb/001/006
 # Use the standard layout file to prevent the UVC search loop crash
 ros2 launch astra_camera astra.launch.xml
 ros2 run jupiterobot2_vision yolo_node.py
-sudo chmod 666 /dev/bus/usb/001/013
+
+
 
 
 ------------------------------------------------------------------------------------
