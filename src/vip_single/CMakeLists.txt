@@ -12,6 +12,7 @@ install(PROGRAMS
   scripts/vip_manager_hardware.py
   scripts/vip_manager_hardware_spare.py
   scripts/vip_manager_hardware_demo.py
+  scripts/vip_manager_hardware_move.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

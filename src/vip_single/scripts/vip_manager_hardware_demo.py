@@ -21,7 +21,7 @@ try:
     from pynvml import *
     nvmlInit()
     HAS_GPU = True
-except:
+except Exception:
     HAS_GPU = False
 
 class VipManualTimeMotionManager(Node):
@@ -85,7 +85,8 @@ class VipManualTimeMotionManager(Node):
             try:
                 handle = nvmlDeviceGetHandleByIndex(0)
                 gpu = nvmlDeviceGetUtilizationRates(handle).gpu
-            except: pass
+            except Exception: 
+                pass
         
         with open(self.tsv_filepath, 'a', newline='') as f:
             writer = csv.writer(f, delimiter='\t')
@@ -104,7 +105,7 @@ class VipManualTimeMotionManager(Node):
             self.get_logger().info(f"Recognized Voice Token: {text}")
 
             # Shutdown Keywords
-            if "i am done" in text or "kill the program" in text:
+            if "i am done" in text or "kill" in text:
                 self.get_logger().warn("Shutdown command received.")
                 self.log_event("SHUTDOWN_TRIGGERED", lat=self.stt_latency)
                 self.speak("Experiment finished. Shutting down now.")
@@ -123,7 +124,8 @@ class VipManualTimeMotionManager(Node):
             # Matches digits followed by optional phrase variants of seconds/sec
             time_match = re.search(r"([\d.]+)\s*(?:second|seconds|sec|s)?", text)
 
-            if "forward" in text:
+            # Added "straight" to the forward parsing loop for dynamic conversational command support
+            if "forward" in text or "straight" in text:
                 duration_sec = float(time_match.group(1)) if time_match else 1.0 # Default to 1 sec
                 action_type = "FORWARD"
                 
@@ -251,4 +253,4 @@ def main():
             rclpy.shutdown()
 
 if __name__ == '__main__':
-    main()
+    main() 
