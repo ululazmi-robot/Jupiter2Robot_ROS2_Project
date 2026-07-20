@@ -39,9 +39,9 @@ class VipManager(Node):
         
         # Coordinates
         self.locations = {
-            "kitchen":     self.create_pose(-0.93, -0.936, 270.0),
-            "living room": self.create_pose(-2.82, -0.815, 270.0),
-            "bedroom":     self.create_pose(-5.03, 0.249, 270.0), 
+            "kitchen":     self.create_pose(1.84, 0.427, 90.0),
+            "living": self.create_pose( 0.453, 0.262, 90.0),
+            "bedroom":     self.create_pose(-5.03, 0.249, 180.0), 
             "study":   self.create_pose(1.09, -1.22, 0.0), 
             "home":        self.create_pose(0.63, -0.0197, 90.0)
         }
